@@ -59,6 +59,9 @@ Route::get("/remove-bg", [RemoveBackgroundController::class, "index"]);
 Route::get("/pdf", [PDFController::class, "generatePDF"]);
 Route::get("/pdfHtml", [PDFController::class, "pdfHtml"]);
 
+//heroku
+Route::get("/heroku", [PDFController::class, "heroku"]);
+
 
 
 //login google

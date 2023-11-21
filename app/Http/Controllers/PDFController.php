@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Barryvdh\DomPDF\PDF as DomPDFPDF;
 use Illuminate\Http\Request;
 use \PDF;
@@ -21,6 +22,12 @@ class PDFController extends Controller
     }
     public function pdfHtml(){
         return view('invoice');
+    }
+
+    public function heroku(){
+        $user = User::all();
+        dd($user);
+        
     }
 
 }
