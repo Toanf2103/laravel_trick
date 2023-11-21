@@ -18,5 +18,8 @@ class PDFController extends Controller
 
         return $pdf->stream('invoice.pdf');
     }
+    public function pdfHtml(){
+        return view('invoice');
+    }
 
 }

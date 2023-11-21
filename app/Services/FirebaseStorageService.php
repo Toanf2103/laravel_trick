@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use Google\Cloud\Storage\StorageClient;
@@ -26,12 +27,18 @@ class FirebaseStorageService
 
         $objectName = $destinationPath . '/' . $file->getClientOriginalName();
 
-        $bucket->upload(
+        $test = $bucket->upload(
             file_get_contents($file->getPathname()),
             [
                 'name' => $objectName,
             ]
         );
+        $object = $bucket->object($objectName);
+        $object->update(['acl' => []], ['predefinedAcl' => 'publicRead']);
+
+        // Tạo URL công khai để truy cập ảnh
+        // dd($test);
+        $imageUri = "https://storage.googleapis.com/{$this->bucketName}/{$objectName}";
 
         return $objectName;
     }

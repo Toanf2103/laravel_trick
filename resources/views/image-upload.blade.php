@@ -16,7 +16,7 @@
         @endif
 
     </h2>
-    <form action="/upload-image" method="post" enctype="multipart/form-data">
+    <form action="{{route('uploade')}}" method="post" enctype="multipart/form-data">
         @csrf
         <input type="file" name="image" accept="image/*">
         <button type="submit">Upload</button>

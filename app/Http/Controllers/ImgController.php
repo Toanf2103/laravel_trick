@@ -18,6 +18,7 @@ class ImgController extends Controller
     }
 
     public function upload(Request $request)
+
     {
         $request->validate([
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Giới hạn 2MB cho ảnh
@@ -27,10 +28,18 @@ class ImgController extends Controller
         $destinationPath = 'images'; // Thay đổi thư mục theo yêu cầu của bạn
 
         $objectName = $this->firebaseStorageService->uploadImage($file, $destinationPath);
+        dd($objectName);
 
         // Làm gì đó với $objectName sau khi tải lên, ví dụ: lưu objectName vào cơ sở dữ liệu
 
         return redirect()->route('upload')->with('success', 'Ảnh đã được tải lên thành công.');
+    }
+
+    public function deleteImg()
+    {
+        $objectName = 'images/image.png';
+        $objectName = $this->firebaseStorageService->deleteImage($objectName);
+        return 'xong';
     }
 
     public function showVnpayForm()
@@ -39,18 +48,18 @@ class ImgController extends Controller
     }
     public function vnpayCheckout(Request $request)
     {
-
+        $pro =[1,2];
+        $a = ["prod"=>$pro,"toanf"=>"tyest"];
         $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-        $vnp_Returnurl = route('done');
+        $vnp_Returnurl = route('done',$a);
         $vnp_TmnCode = "N0KTZXQZ"; //Mã website tại VNPAY 
         $vnp_HashSecret = "GSUHLGEINQESDRWPSVDRBLZITGBMDYKA"; //Chuỗi bí mật
 
-        $vnp_TxnRef = "123224123"; //Mã đơn hàng. Trong thực tế Merchant cần insert đơn hàng vào DB và gửi mã này sang VNPAY
+        $vnp_TxnRef = time() . ""; //Mã đơn hàng. Trong thực tế Merchant cần insert đơn hàng vào DB và gửi mã này sang VNPAY
         $vnp_OrderInfo = "Thanh toán toanf";
         $vnp_OrderType = "billpayment";
         $vnp_Amount = 22000 * 100;
         $vnp_Locale = 'vi';
-        $vnp_BankCode = "NCB";
         $vnp_IpAddr = $_SERVER['REMOTE_ADDR'];
         //Add Params of 2.0.1 Version
         // $vnp_ExpireDate = $_POST['txtexpire'];
@@ -87,7 +96,7 @@ class ImgController extends Controller
             "vnp_OrderInfo" => $vnp_OrderInfo,
             "vnp_OrderType" => $vnp_OrderType,
             "vnp_ReturnUrl" => $vnp_Returnurl,
-            "vnp_TxnRef" => $vnp_TxnRef
+            "vnp_TxnRef" => $vnp_TxnRef,
             // "vnp_ExpireDate" => $vnp_ExpireDate,
             // "vnp_Bill_Mobile" => $vnp_Bill_Mobile,
             // "vnp_Bill_Email" => $vnp_Bill_Email,
@@ -99,8 +108,8 @@ class ImgController extends Controller
             // "vnp_Inv_Phone" => $vnp_Inv_Phone,
             // "vnp_Inv_Email" => $vnp_Inv_Email,
             // "vnp_Inv_Customer" => $vnp_Inv_Customer,
-            // "vnp_Inv_Address" => $vnp_Inv_Address,
-            // "vnp_Inv_Company" => $vnp_Inv_Company,
+            "vnp_Inv_Address" => "777_zone",
+            "vnp_Inv_Company" => "777_zone",
             // "vnp_Inv_Taxcode" => $vnp_Inv_Taxcode,
             // "vnp_Inv_Type" => $vnp_Inv_Type
         );
@@ -135,7 +144,7 @@ class ImgController extends Controller
         $returnData = array(
             'code' => '00', 'message' => 'success', 'data' => $vnp_Url
         );
-       
+
         if (isset($_POST['redirect'])) {
             header('Location: ' . $vnp_Url);
             die();
@@ -146,7 +155,7 @@ class ImgController extends Controller
     }
     public function vnpayCheckoutDone(Request $request)
     {
-        dd($request);
+        dd($request->all());
         return 'xong';
     }
 
@@ -154,6 +163,28 @@ class ImgController extends Controller
 
     public function execPostRequest($url, $data)
     {
+
+        // $ch = curl_init($url);
+        // curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        // curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        // curl_setopt(
+        //     $ch,
+        //     CURLOPT_HTTPHEADER,
+        //     array(
+        //         'Content-Type: application/json',
+        //         'Content-Length: ' . strlen($data)
+        //     )
+        // );
+        // curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+        // //execute post
+        // $result = curl_exec($ch);
+        // //close connection
+        // curl_close($ch);
+        // // dd($result);
+        // return $result;
+
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
@@ -173,7 +204,6 @@ class ImgController extends Controller
         $result = curl_exec($ch);
         //close connection
         curl_close($ch);
-
         return $result;
     }
 
@@ -191,9 +221,9 @@ class ImgController extends Controller
 
         $orderInfo = "kkkk";
         $amount = "10000";
-        $orderId = time() . "";
+        $orderId = time() . "-777zone";
         $redirectUrl = route('momoDone');
-        $ipnUrl = route('momoDone');
+        $ipnUrl = route('momoDone');;
         $extraData = "";
 
         $requestId = time() . "";
@@ -221,7 +251,7 @@ class ImgController extends Controller
         $jsonResult = json_decode($result, true);  // decode json
 
         //Just a example, please check more in there
-        // dd($jsonResult['payUrl']);
+        dd($jsonResult);
         return redirect()->to($jsonResult['payUrl']);
         // header('Location: ' . $jsonResult['payUrl']);
     }
@@ -234,7 +264,129 @@ class ImgController extends Controller
         dd($requestData);
     }
 
-    public function liretest(){
+    public function liretest()
+    {
         return view('lirewire-test');
+    }
+
+    public function loginGoogleForm()
+    {
+        return view('loginGoogleForm');
+    }
+    public function zaloPay()
+    {
+
+
+        // PHP Version 7.3.3
+
+        $config = [
+            "appid" => 553,
+            "key1" => "9phuAOYhan4urywHTh0ndEXiV3pKHr5Q",
+            "key2" => "Iyz2habzyr7AG8SgvoBCbKwKi3UzlLi3",
+            "endpoint" => "https://sandbox.zalopay.com.vn/v001/tpe/createorder"
+        ];
+
+        $embeddata = [
+            "merchantinfo" => "embeddata123"
+        ];
+        $items = [
+            ["itemid" => "knb", "itemname" => "kim nguyen bao", "itemprice" => 198400, "itemquantity" => 1]
+        ];
+        $order = [
+            "appid" => $config["appid"],
+            "apptime" => round(microtime(true) * 1000), // miliseconds
+            "apptransid" => date("ymd") . "_" . uniqid(), // mã giao dich có định dạng yyMMdd_xxxx
+            "appuser" => "demo",
+            "item" => json_encode($items, JSON_UNESCAPED_UNICODE),
+            "embeddata" => json_encode($embeddata, JSON_UNESCAPED_UNICODE),
+            "amount" => 50000,
+            "description" => "ZaloPay Intergration Demo",
+            "bankcode" => "zalopayapp"
+        ];
+
+        // appid|apptransid|appuser|amount|apptime|embeddata|item
+        $data = $order["appid"] . "|" . $order["apptransid"] . "|" . $order["appuser"] . "|" . $order["amount"]
+            . "|" . $order["apptime"] . "|" . $order["embeddata"] . "|" . $order["item"];
+        $order["mac"] = hash_hmac("sha256", $data, $config["key1"]);
+
+        $context = stream_context_create([
+            "http" => [
+                "header" => "Content-type: application/x-www-form-urlencoded\r\n",
+                "method" => "POST",
+                "content" => http_build_query($order)
+            ]
+        ]);
+
+        $resp = file_get_contents($config["endpoint"], false, $context);
+        $result = json_decode($resp, true);
+        dd($result);
+        foreach ($result as $key => $value) {
+            echo "$key: $value<br>";
+        }
+    }
+    public function momoTest2()
+    {
+        $endpoint = "https://test-payment.momo.vn/v2/gateway/api/create";
+
+
+        $partnerCode = 'MOMO';
+        $accessKey = 'F8BBA842ECF85';
+        $secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
+        $orderInfo = "Thanh toán qua MoMo";
+        $amount = "10000";
+        $orderId = time() . "";
+        $redirectUrl = route('momoDone');
+        $ipnUrl = route('momoDone');
+        $extraData = "";
+        $lang = 'vi';
+        $paymentCode = 'L/U2a6KeeeBBU/pQAa+g8LilOVzWfvLf/P4XOnAQFmnkrKHICj51qrOTUQ+YrX8/Xs1YD4IOdyiGSkCfV6Je9PeRzl3sO+mDzXNG4enhigU3VGPFh67a37dSwItMJXRDuK64DCqv35YPQtiAOVVZV35/1XBw1rWopmRP03YMNgQWedGLHwmPSkRGoT6XtDSeypJtgbLZ5KIOJsdcynBdFEnHAuIjvo4stADmRL8GqdgsZ0jJCx/oq5JGr8wY+a4g9KolEOSTLBTih48RrGZq3LDBbT4QGBjtW+0W+/95n8W0Aot6kzdG4rWg1NB7EltY6/A8RWAHJav4kWQoFcxgfA==';
+
+
+
+        $partnerCode = $partnerCode;
+        $accessKey = $accessKey;
+        $serectkey = $secretKey;
+        $orderId = $orderId; // Mã đơn hàng
+        $orderInfo =  $orderInfo ;
+        $amount = $amount;
+        $ipnUrl = $ipnUrl;
+        $redirectUrl = $redirectUrl;
+        $extraData = $extraData;
+        $userInfo = [
+            "email"=> "email_add@domain.com"
+        ];
+        $requestId = time() . "";
+        $requestType = "captureWallet";
+        $extraData = ($extraData ? $extraData : "");
+        //before sign HMAC SHA256 signature
+        $rawHash = "accessKey=" . $accessKey . "&amount=" . $amount . "&extraData=" . $extraData . "&ipnUrl=" . $ipnUrl . "&orderId=" . $orderId . "&orderInfo=" . $orderInfo . "&partnerCode=" . $partnerCode . "&redirectUrl=" . $redirectUrl . "&requestId=" . $requestId . "&requestType=" . $requestType;
+
+        $rawHash = "accessKey=" . $accessKey . "&amount=" . $amount . "&extraData=" . $extraData . "&ipnUrl=" . $ipnUrl . "&orderId=" . $orderId . "&orderInfo=" . $orderInfo . "&partnerCode=" . $partnerCode . "&redirectUrl=" . $redirectUrl . "&requestId=" . $requestId . "&requestType=" . $requestType;
+        $signature = hash_hmac("sha256", $rawHash, $serectkey);
+        $data = array(
+            'partnerCode' => $partnerCode,
+            'partnerName' => "Test",
+            "storeId" => "MomoTestStore",
+            'requestId' => $requestId,
+            'amount' => $amount,
+            'orderId' => $orderId,
+            'orderInfo' => $orderInfo,
+            'redirectUrl' => $redirectUrl,
+            'ipnUrl' => $ipnUrl,
+            'lang' => 'vi',
+            'extraData' => $extraData,
+            'requestType' => $requestType,
+            'signature' => $signature,
+            'userInfo'=>$userInfo,
+            'lang'=>$lang,
+            'paymentCode' => $paymentCode,
+        );
+        $result = $this->execPostRequest($endpoint, json_encode($data));
+        $jsonResult = json_decode($result, true);  // decode json
+
+        //Just a example, please check more in there
+        // dd($jsonResult);
+        return redirect()->to($jsonResult['payUrl']);
+        return header('Location: ' . $jsonResult['payUrl']);
     }
 }
